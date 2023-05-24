@@ -40,14 +40,14 @@ assign WREADY = (w_addr[DEPTH-1:0] == r_addr[DEPTH-1:0]) && (w_addr[DEPTH]^r_add
 
 always @(posedge CLK or negedge RESETn)begin
 	if (!RESETn)begin
-		w_addr <= (DEPTH+1)'h0;
-		r_addr <= (DEPTH+1)'h0;
+		w_addr <= 0;
+		r_addr <= 0;
 	end else begin
 		if (WVALID&WREADY)begin
-			w_addr <= w_addr + (DEPTH+1)'h1;
+			w_addr <= w_addr + 1;
 		end
 		if (RVALID&RREADY)begin
-			r_addr <= r_addr + (DEPTH+1)'h1;
+			r_addr <= r_addr + 1;
 		end
 	end
 end
