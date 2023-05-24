@@ -3,7 +3,7 @@
 **
 ** Create Date: 05/13/2023 09:00:52 AM
 ** Design Name:
-** Module Name: RForwardSeparater
+** Module Name: WBackwardSeparater 
 ** Project Name: AXI4Bus
 ** Description:
 **
@@ -16,7 +16,7 @@
 
 `timescale 1ns / 1ps
 
-module RForwardSeparater
+module WBackwardSeparater
 (
     input     [13:0] DATA,
     input            VALID,
