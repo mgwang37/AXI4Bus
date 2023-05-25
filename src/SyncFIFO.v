@@ -28,27 +28,30 @@ module SyncFIFO#(
     output               WREADY,
 
     output   [WIDTH-1:0] RDATA,
-    output               RVALID,
+    output   reg         RVALID,
     input                RREADY
 );
 
 reg [DEPTH:0] w_addr;
 reg [DEPTH:0] r_addr;
+wire          p_RVALID;
 
-assign RVALID = (w_addr[DEPTH:0] == r_addr[DEPTH:0]) ? 1'b0 : 1'b1;
-assign WREADY = (w_addr[DEPTH-1:0] == r_addr[DEPTH-1:0]) && (w_addr[DEPTH]^r_addr[DEPTH]) ? 1'b0 : 1'b1;
+assign p_RVALID = (w_addr[DEPTH:0] == r_addr[DEPTH:0]) ? 1'b0 : 1'b1;
+assign WREADY   = (w_addr[DEPTH-1:0] == r_addr[DEPTH-1:0]) && (w_addr[DEPTH]^r_addr[DEPTH]) ? 1'b0 : 1'b1;
 
 always @(posedge CLK or negedge RESETn)begin
 	if (!RESETn)begin
 		w_addr <= 0;
 		r_addr <= 0;
+		RVALID <= 0;
 	end else begin
-		if (WVALID&WREADY)begin
+		if (WVALID & WREADY)begin
 			w_addr <= w_addr + 1;
 		end
-		if (RVALID&RREADY)begin
+		if (p_RVALID & RREADY)begin
 			r_addr <= r_addr + 1;
 		end
+		RVALID <= p_RVALID;
 	end
 end
 
@@ -58,7 +61,7 @@ SyncMem #(
 ) mem (
 	.CLK(CLK),
 	.WEN(WREADY&WVALID),
-	.REN(RVALID),
+	.REN(p_RVALID),
 	.WADDR(w_addr[DEPTH-1:0]),
 	.RADDR(r_addr[DEPTH-1:0]),
 	.DIN(WDATA),

@@ -31,29 +31,30 @@ module AsyncFIFO#(
     input                RRESETn,
     input                RCLK,
     output   [WIDTH-1:0] RDATA,
-    output               RVALID,
+    output   reg         RVALID,
     input                RREADY
 );
 
 reg  [DEPTH:0] w_index;
-reg  [DEPTH:0] w_index_g;
+wire [DEPTH:0] w_index_g;
 wire [DEPTH:0] wr_index_g;
+wire           p_RVALID;
 
+assign w_index_g = (w_index>>1) ^ w_index;
 assign WREADY = ((w_index_g[DEPTH:0] ^ wr_index_g[DEPTH:0]) == (2'b11 << (DEPTH-1))) ? 1'b0 : 1'b1;
 
 
 reg  [DEPTH:0] r_index;
-reg  [DEPTH:0] r_index_g;
+wire [DEPTH:0] r_index_g;
 wire [DEPTH:0] rw_index_g;
 
-assign RVALID = (r_index_g[DEPTH:0] == rw_index_g[DEPTH:0]) ? 1'b0 : 1'b1;
+assign r_index_g = (r_index>>1) ^ r_index;
+assign p_RVALID = (r_index_g[DEPTH:0] == rw_index_g[DEPTH:0]) ? 1'b0 : 1'b1;
 
 always @(posedge WCLK or negedge WRESETn)begin
 	if (!WRESETn)begin
 		w_index <= 0;
-		w_index_g <= 0;
 	end else begin
-		w_index_g <= (w_index>>1) ^ w_index;
 		if (WVALID && WREADY) begin
 			w_index <= w_index +1;
 		end
@@ -74,12 +75,12 @@ AsyncMem #(
 	.DEPTH(DEPTH)
 )mem(
 	.CLKW(WCLK),
-	.WEN(WVALID && WREADY),
+	.WEN(WVALID & WREADY),
 	.WADDR(w_index[DEPTH-1:0]),
 	.DIN(WDATA),
 
 	.CLKR(RCLK),
-	.REN(RVALID),
+	.REN(p_RVALID),
 	.RADDR(r_index[DEPTH-1:0]),
 	.DOUT(RDATA)
 );
@@ -87,12 +88,12 @@ AsyncMem #(
 always @(posedge RCLK or negedge RRESETn)begin
 	if (!RRESETn)begin
 		r_index <= 0;
-		r_index_g <= 0;
+		RVALID  <= 0;
 	end else begin
-		r_index_g <= (r_index>>1) ^ r_index;
-		if (RVALID && RREADY) begin
+		if (p_RVALID && RREADY) begin
 			r_index <= r_index +1;
 		end
+		RVALID <= p_RVALID;
 	end
 end
 
