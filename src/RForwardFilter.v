@@ -30,7 +30,7 @@ module RForwardFilter#(
 );
 
 wire   addr_ok;
-assign addr_ok = (DATAi[68:33] & ADDR_MASK == ADDR_BANK) ? 1'b1 : 1'b0;
+assign addr_ok = ((DATAi[68:33] & ADDR_MASK) == ADDR_BANK) ? 1'b1 : 1'b0;
 
 assign VALIDo = addr_ok & VALIDi;
 assign READYi = addr_ok & READYo;

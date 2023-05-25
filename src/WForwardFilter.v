@@ -39,19 +39,20 @@ wire   addr_ok;
 assign VALIDo  = en & VALIDi;
 assign READYi  = en & READYo;
 assign DATAo   = DATAi;
-assign addr_ok = (DATAi[68:33] & ADDR_MASK == ADDR_BANK) ? 1'b1 : 1'b0;
+assign addr_ok = ((DATAi[68:33] & ADDR_MASK) == ADDR_BANK) ? 1'b1 : 1'b0;
 
 always @(posedge CLK or negedge RESETn)begin
     if (!RESETn)begin
 		en <= 1'b0;
 		cmd_en <= 1'b1;
 	end else if(cmd_en)begin
-        if (VALIDi && READYi)begin
+        if (VALIDi)begin
 			en <= addr_ok;
-			cmd_en <= 1'b0;
+        	if (READYi)
+				cmd_en <= 1'b0;
 		end
 	end else begin
-		if (VALIDi && READYi && DATAi[0])begin
+		if (VALIDi & READYi & DATAi[0])begin
 			en <= 1'b0;
 			cmd_en <= 1'b1;
 		end

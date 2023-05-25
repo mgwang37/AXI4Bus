@@ -31,7 +31,7 @@ module WBackwardFilter#(
 
 wire   addr_ok;
 
-assign addr_ok = (DATAi[13:6] & ID_MASK == ID_BANK) ? 1'b1 : 1'b0;
+assign addr_ok = ((DATAi[13:6] & ID_MASK) == ID_BANK) ? 1'b1 : 1'b0;
 assign VALIDo  = addr_ok & VALIDi;
 assign READYi  = addr_ok & READYo;
 assign DATAo   = DATAi;
